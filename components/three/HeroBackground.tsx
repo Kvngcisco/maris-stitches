@@ -11,12 +11,16 @@ export default function HeroBackground() {
   const [mode, setMode] = useState<'static' | 'shader' | 'webgl'>('static');
 
   useEffect(() => {
-    if (prefersReducedMotion()) {
+    try {
+      if (prefersReducedMotion()) {
+        setMode('static');
+      } else if (canRunWebGL()) {
+        setMode('webgl');
+      } else {
+        setMode('shader');
+      }
+    } catch {
       setMode('static');
-    } else if (canRunWebGL()) {
-      setMode('webgl');
-    } else {
-      setMode('shader');
     }
   }, []);
 

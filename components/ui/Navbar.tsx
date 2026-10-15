@@ -147,8 +147,7 @@ export default function Navbar() {
               ref={(el) => { if (el) linksRef.current[i] = el; }}
               href={item.href}
               onClick={(e) => { e.preventDefault(); scrollTo(item.href); }}
-              className="font-heading text-4xl font-light text-ivory hover:text-blush transition-colors duration-fast"
-              style={{ opacity: 0 }}
+              className="font-heading text-4xl font-light text-ivory hover:text-blush transition-colors"
             >
               {item.label}
             </a>

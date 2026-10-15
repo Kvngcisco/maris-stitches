@@ -8,29 +8,25 @@ import { siteConfig } from '@/config/site';
 import { portfolioSeed, type PortfolioItem } from '@/lib/portfolioSeed';
 import SectionNumeral from '@/components/ui/SectionNumeral';
 
-// Dynamic imports for heavy components
-const Lightbox = dynamic(() => import('yet-another-react-lightbox'), { ssr: false });
-
-import ZoomPlugin       from 'yet-another-react-lightbox/plugins/zoom';
-import CaptionsPlugin   from 'yet-another-react-lightbox/plugins/captions';
-import ThumbnailsPlugin from 'yet-another-react-lightbox/plugins/thumbnails';
-
-import 'yet-another-react-lightbox/styles.css';
-import 'yet-another-react-lightbox/plugins/captions.css';
-import 'yet-another-react-lightbox/plugins/thumbnails.css';
+// Lightbox loaded only when opened — reduces mobile JS bundle significantly
+const Lightbox = dynamic(() => import('yet-another-react-lightbox'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const waBase = `https://wa.me/${siteConfig.whatsapp}?text=`;
 
 export default function PortfolioSection() {
-  const [items, setItems]               = useState<PortfolioItem[]>(portfolioSeed);
+  const [items, setItems]                   = useState<PortfolioItem[]>(portfolioSeed);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [pluginsLoaded, setPluginsLoaded] = useState(false);
+  const [lightboxOpen, setLightboxOpen]     = useState(false);
+  const [lightboxIndex, setLightboxIndex]   = useState(0);
+  const [lightboxReady, setLightboxReady]   = useState(false);
 
-  // Load from Supabase if configured
+  // Try loading from Supabase; fall back to seed silently
   useEffect(() => {
-    const loadFromSupabase = async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
@@ -39,19 +35,21 @@ export default function PortfolioSection() {
           .select('*')
           .eq('published', true)
           .order('sort_order');
-        if (!error && data && data.length > 0) {
+        if (!cancelled && !error && data && data.length > 0) {
           setItems(data as PortfolioItem[]);
         }
       } catch {
-        // Supabase not configured — use seed data
+        // Supabase not configured — seed data is fine
       }
-    };
-    loadFromSupabase();
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    // Lazy-load lightbox plugins
-    setPluginsLoaded(true);
+  // Pre-load lightbox CSS only after first interaction
+  const openLightbox = useCallback((index: number) => {
+    setLightboxIndex(index);
+    setLightboxReady(true);
+    setLightboxOpen(true);
   }, []);
 
   const filteredItems = activeCategory === 'All'
@@ -69,11 +67,6 @@ export default function PortfolioSection() {
     height:      item.height,
   }));
 
-  const openLightbox = useCallback((index: number) => {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
-  }, []);
-
   return (
     <section
       id="portfolio"
@@ -83,58 +76,61 @@ export default function PortfolioSection() {
       <SectionNumeral numeral="04" />
 
       <div className="container">
+        {/* Heading */}
         <div className="mb-10">
           <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">Our Work</p>
           <h2 className="font-heading text-4xl md:text-5xl font-light text-aubergine">Portfolio</h2>
           <div className="mt-4 w-12 h-px bg-mulberry" />
         </div>
 
-        {/* Featured Swiper — simple fallback without Swiper dependency issues */}
+        {/* Featured horizontal scroll */}
         {featuredItems.length > 0 && (
           <div className="mb-10">
             <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">Featured Creations</p>
-            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
               {featuredItems.map((item) => (
-                <div
+                <button
                   key={item.id}
-                  className="shrink-0 w-64 md:w-80 snap-start relative rounded-lg overflow-hidden cursor-pointer group"
+                  className="shrink-0 w-56 md:w-72 snap-start rounded-xl overflow-hidden cursor-pointer group text-left"
                   onClick={() => {
                     const idx = filteredItems.findIndex(i => i.id === item.id);
                     openLightbox(idx >= 0 ? idx : 0);
                   }}
+                  aria-label={`View ${item.title}`}
                 >
-                  <div className="relative aspect-[3/4]">
+                  <div className="relative w-full" style={{ paddingBottom: '133%' }}>
                     <Image
                       src={item.image_url}
                       alt={item.title}
                       fill
-                      sizes="320px"
-                      className="object-cover transition-transform duration-slow group-hover:scale-105"
+                      sizes="288px"
+                      className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-aubergine/50 opacity-0 group-hover:opacity-100 transition-opacity duration-base flex items-end p-4">
-                      <p className="font-heading text-lg text-ivory">{item.title}</p>
+                    <div className="absolute inset-0 flex items-end p-4"
+                      style={{ background: 'linear-gradient(to top, rgba(42,26,46,0.7) 0%, transparent 60%)' }}>
+                      <p className="font-heading text-base text-ivory">{item.title}</p>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
         )}
 
         {/* Filter bar */}
-        <div className="sticky top-20 z-40 py-3 -mx-4 px-4 bg-ivory/90 backdrop-blur-sm mb-8">
+        <div className="sticky top-16 z-40 py-3 -mx-4 px-4 mb-8"
+          style={{ background: 'rgba(248,244,238,0.95)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
           <div className="flex flex-wrap gap-2">
             {siteConfig.portfolio.categories.map((cat) => (
               <motion.button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`relative px-4 py-2 rounded-full text-sm font-body transition-colors duration-fast border ${
+                className={`px-4 py-2 rounded-full text-sm font-body border transition-colors ${
                   activeCategory === cat
                     ? 'bg-mulberry text-ivory border-mulberry'
-                    : 'bg-transparent text-stone border-mulberry/40 hover:border-mulberry hover:text-aubergine'
+                    : 'bg-transparent text-stone border-stone/40'
                 }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.96 }}
                 aria-pressed={activeCategory === cat}
               >
                 {cat}
@@ -150,34 +146,40 @@ export default function PortfolioSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4"
+            transition={{ duration: 0.25 }}
+            className="columns-1 sm:columns-2 lg:columns-3 gap-4"
           >
             {filteredItems.map((item, index) => (
-              <motion.div
+              <div
                 key={item.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="break-inside-avoid cursor-pointer group relative overflow-hidden rounded-lg"
+                className="break-inside-avoid mb-4 cursor-pointer group relative overflow-hidden rounded-xl"
                 onClick={() => openLightbox(index)}
+                role="button"
+                tabIndex={0}
+                aria-label={`View ${item.title}`}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') openLightbox(index); }}
               >
-                <div className="relative w-full" style={{ aspectRatio: `${item.width}/${item.height}` }}>
+                {/* Aspect ratio box — uses padding hack for older browser compatibility */}
+                <div className="relative w-full" style={{ paddingBottom: `${(item.height / item.width) * 100}%` }}>
                   <Image
                     src={item.image_url}
                     alt={item.title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-slow group-hover:scale-[1.03]"
-                    loading="lazy"
+                    className="object-cover"
+                    loading={index < 4 ? 'eager' : 'lazy'}
                   />
-                  <div className="absolute inset-0 bg-aubergine/60 opacity-0 group-hover:opacity-100 transition-opacity duration-base flex flex-col items-center justify-center gap-2">
+                  {/* Hover overlay — only on non-touch */}
+                  <div
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'rgba(42,26,46,0.6)' }}
+                    aria-hidden="true"
+                  >
                     <span className="font-body text-xs tracking-widest text-ivory uppercase">View</span>
-                    <p className="font-heading text-xl text-ivory text-center px-4">{item.title}</p>
+                    <p className="font-heading text-lg text-ivory text-center px-4">{item.title}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </AnimatePresence>
@@ -189,14 +191,14 @@ export default function PortfolioSection() {
         )}
       </div>
 
-      {/* Lightbox */}
-      {lightboxOpen && pluginsLoaded && (
+      {/* Lightbox — only mounted after user taps an image */}
+      {lightboxReady && (
         <Lightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
           index={lightboxIndex}
           slides={slides}
-          plugins={[ZoomPlugin, CaptionsPlugin, ThumbnailsPlugin]}
+          styles={{ container: { backgroundColor: 'rgba(42,26,46,0.97)' } }}
           toolbar={{
             buttons: [
               <a
@@ -204,7 +206,7 @@ export default function PortfolioSection() {
                 href={`${waBase}${encodeURIComponent(`Hi, I'm interested in: ${filteredItems[lightboxIndex]?.title ?? ''}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="yarl__button flex items-center gap-2 text-white text-sm px-3"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', padding: '0 12px', fontSize: '14px' }}
                 aria-label="Chat about this design on WhatsApp"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

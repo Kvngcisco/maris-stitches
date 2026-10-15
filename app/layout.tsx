@@ -78,9 +78,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`${cormorant.variable} ${inter.variable}`}
-      style={{ fontFamily: 'var(--font-inter), ui-sans-serif, system-ui, sans-serif' }}
     >
       <head>
+        {/* Critical viewport meta — must be present for mobile to render correctly */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#F8F4EE" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}

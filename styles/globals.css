@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "yet-another-react-lightbox/styles.css";
+@import "yet-another-react-lightbox/plugins/captions.css";
+@import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 /* ─────────────────────────────────────────────────────
    Brand Theme — processed by @tailwindcss/postcss
