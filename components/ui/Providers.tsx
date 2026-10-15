@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef } from 'react';
-import { AnimatePresence } from 'framer-motion';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
@@ -27,9 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     async function initLenis() {
       try {
-        // Import the 'lenis' package (renamed from @studio-freight/lenis)
         const LenisModule = await import('lenis').catch(() => null);
-
         if (!LenisModule) return;
 
         const Lenis = LenisModule.default || LenisModule;
@@ -38,13 +35,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
           smoothWheel: true,
         });
-
         lenisRef.current = lenis;
 
-        // Sync Lenis RAF with GSAP ticker
-        gsap.ticker.add((time) => {
-          lenis?.raf(time * 1000);
-        });
+        gsap.ticker.add((time) => { lenis?.raf(time * 1000); });
         gsap.ticker.lagSmoothing(0);
       } catch {
         // Lenis unavailable — native scroll is fine
@@ -53,7 +46,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     initLenis();
 
-    // Pause on tab hidden
+    // Pause all animation when tab is hidden
     const handleVisibility = () => {
       if (document.hidden) {
         gsap.globalTimeline.pause();
@@ -69,7 +62,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
       (lenisRef.current as { destroy?: () => void } | null)?.destroy?.();
-      gsap.ticker.remove(() => {});
     };
   }, [reduced]);
 

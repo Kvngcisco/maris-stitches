@@ -4,52 +4,53 @@ import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { siteConfig } from '@/config/site';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
+import { preloaderDone } from '@/components/ui/Preloader';
 import Button from '@/components/ui/Button';
 import gsap from 'gsap';
 
-const HeroBackground = dynamic(() => import('@/components/three/HeroBackground'), { ssr: false });
+const HeroBackground = dynamic(() => import('@/components/three/HeroBackground'), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="absolute inset-0"
+      style={{ background: 'linear-gradient(135deg, #6B2D4F 0%, #E8D5D0 55%, #F8F4EE 100%)' }}
+    />
+  ),
+});
 
 const waUrl = `https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent(siteConfig.whatsappMessage)}`;
 
 export default function HomeSection() {
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const bodyRef     = useRef<HTMLParagraphElement>(null);
-  const ctaRef      = useRef<HTMLDivElement>(null);
-  const indicatorRef= useRef<HTMLDivElement>(null);
-  const reduced     = useReducedMotion();
+  const headlineRef  = useRef<HTMLHeadingElement>(null);
+  const bodyRef      = useRef<HTMLParagraphElement>(null);
+  const ctaRef       = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const reduced      = useReducedMotion();
 
   useEffect(() => {
     const runEntrance = () => {
-      if (reduced) return;
+      if (reduced) {
+        // Show everything immediately without animation
+        [headlineRef, bodyRef, ctaRef, indicatorRef].forEach((r) => {
+          if (r.current) r.current.style.opacity = '1';
+        });
+        return;
+      }
 
-      const tl = gsap.timeline();
-
-      if (headlineRef.current) {
-        // Simple line reveal without SplitType dependency issues
-        gsap.set(headlineRef.current, { opacity: 0, y: 40 });
-        tl.to(headlineRef.current, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
-      }
-      if (bodyRef.current) {
-        gsap.set(bodyRef.current, { opacity: 0, y: 20 });
-        tl.to(bodyRef.current, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, '-=0.4');
-      }
-      if (ctaRef.current) {
-        gsap.set(ctaRef.current, { opacity: 0, y: 16 });
-        tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3');
-      }
-      if (indicatorRef.current) {
-        tl.fromTo(indicatorRef.current,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.5, ease: 'power1.out' },
-          '+=0.3'
-        );
-      }
+      gsap.timeline()
+        .to(headlineRef.current,  { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
+        .to(bodyRef.current,      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, '-=0.4')
+        .to(ctaRef.current,       { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3')
+        .to(indicatorRef.current, { opacity: 1,        duration: 0.5, ease: 'power1.out' }, '+=0.2');
     };
 
-    window.addEventListener('preloader:done', runEntrance, { once: true });
-    // If preloader already done (e.g. SPA nav), run immediately
-    if (sessionStorage.getItem('preloader-shown')) runEntrance();
+    // If preloader already done (race condition fix), run immediately
+    if (preloaderDone.current) {
+      runEntrance();
+      return;
+    }
 
+    window.addEventListener('preloader:done', runEntrance, { once: true });
     return () => window.removeEventListener('preloader:done', runEntrance);
   }, [reduced]);
 
@@ -61,32 +62,33 @@ export default function HomeSection() {
     >
       <HeroBackground />
 
-      <div className="container relative z-10 pt-20">
+      <div className="container relative z-10 pt-20 pb-16">
         <div className="max-w-2xl">
           <h1
             ref={headlineRef}
             className="font-heading text-5xl md:text-6xl lg:text-7xl font-light leading-tight text-ivory"
-            style={{ opacity: 0 }}
+            style={{ opacity: 0, transform: 'translateY(40px)' }}
           >
             Fashion Designed to Make You Stand Out.
           </h1>
 
           <p
             ref={bodyRef}
-            className="mt-6 font-body text-base md:text-lg text-ivory/80 leading-relaxed max-w-xl"
-            style={{ opacity: 0 }}
+            className="mt-6 font-body text-base md:text-lg leading-relaxed max-w-xl text-ivory"
+            style={{ opacity: 0, transform: 'translateY(20px)' }}
           >
             {siteConfig.description}
           </p>
 
-          <div ref={ctaRef} className="mt-8 flex flex-wrap gap-4" style={{ opacity: 0 }}>
+          <div
+            ref={ctaRef}
+            className="mt-8 flex flex-wrap gap-4"
+            style={{ opacity: 0, transform: 'translateY(16px)' }}
+          >
             <Button
               variant="primary"
               size="lg"
-              onClick={() => {
-                const el = document.getElementById('portfolio');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Explore Our Designs
             </Button>
@@ -94,7 +96,7 @@ export default function HomeSection() {
               href={waUrl}
               variant="secondary"
               size="lg"
-              className="border-ivory text-ivory hover:bg-ivory hover:text-aubergine"
+              className="!border-ivory !text-ivory hover:!bg-ivory hover:!text-aubergine"
             >
               Chat on WhatsApp
             </Button>
@@ -110,7 +112,7 @@ export default function HomeSection() {
         aria-hidden="true"
       >
         <span className="font-body text-xs tracking-widest text-ivory/60 uppercase">Scroll</span>
-        <div className="w-px h-12 bg-ivory/30 animate-pulse" />
+        <div className="w-px h-10 bg-ivory/40 animate-pulse" />
       </div>
     </section>
   );
