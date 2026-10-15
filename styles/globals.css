@@ -1,7 +1,4 @@
 @import "tailwindcss";
-@import "yet-another-react-lightbox/styles.css";
-@import "yet-another-react-lightbox/plugins/captions.css";
-@import "yet-another-react-lightbox/plugins/thumbnails.css";
 
 /* ─────────────────────────────────────────────────────
    Brand Theme — processed by @tailwindcss/postcss
@@ -116,3 +113,44 @@ html.lenis { height: auto; }
 /* ─── font-heading / font-body helpers ─── */
 .font-heading { font-family: var(--font-cormorant, 'Cormorant Garamond', ui-serif, Georgia, serif); }
 .font-body    { font-family: var(--font-inter, 'Inter', ui-sans-serif, system-ui, sans-serif); }
+
+/* ─── Hero gradient background ─── */
+.hero-gradient-bg {
+  background: linear-gradient(135deg, #4E1F39 0%, #6B2D4F 30%, #8A3F66 55%, #E8D5D0 80%, #F8F4EE 100%);
+  background-size: 300% 300%;
+  animation: heroGradient 8s ease infinite;
+}
+
+@keyframes heroGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Preloader bar animation ─── */
+.preloader-bar {
+  animation: preloaderFill 1.8s ease forwards;
+  transform-origin: left center;
+}
+
+@keyframes preloaderFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ─── Preloader logo fade in ─── */
+.preloader-logo {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Reduced motion — kill all animations ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient-bg { animation: none !important; }
+  .preloader-bar    { animation: none !important; transform: scaleX(1) !important; }
+  .preloader-logo   { animation: none !important; opacity: 1 !important; }
+}

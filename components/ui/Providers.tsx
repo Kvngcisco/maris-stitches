@@ -3,79 +3,61 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 
-// ─── Reduced Motion Context ───────────────────────────────
 const ReducedMotionContext = createContext(false);
 
 export function useReducedMotionContext() {
   return useContext(ReducedMotionContext);
 }
 
-// ─── Providers ───────────────────────────────────────────
 export default function Providers({ children }: { children: React.ReactNode }) {
   const reduced = useReducedMotion();
-  const lenisRef = useRef<unknown>(null);
+  const lenisRef = useRef<{ stop?: () => void; start?: () => void; destroy?: () => void; raf?: (t: number) => void } | null>(null);
 
   useEffect(() => {
-    // All animation libraries loaded lazily — safe for mobile SSR
-    let cleanupGsap: (() => void) | undefined;
+    // All heavy libraries loaded asynchronously — safe for all devices
+    let gsapInstance: { globalTimeline: { pause: () => void; resume: () => void }; ticker: { add: (fn: (t: number) => void) => void; lagSmoothing: (v: number) => void } } | null = null;
 
     async function init() {
       try {
-        const [gsapMod, ScrollTriggerMod] = await Promise.all([
-          import('gsap'),
-          import('gsap/ScrollTrigger'),
-        ]);
-        const gsap = gsapMod.default;
-        const { ScrollTrigger } = ScrollTriggerMod;
-        gsap.registerPlugin(ScrollTrigger);
+        const gsapMod = await import('gsap');
+        gsapInstance = gsapMod.default as typeof gsapInstance;
+
+        const stMod = await import('gsap/ScrollTrigger');
+        const { ScrollTrigger } = stMod;
+        if (gsapInstance) (gsapInstance as unknown as { registerPlugin: (p: unknown) => void }).registerPlugin(ScrollTrigger);
 
         if (!reduced) {
           try {
-            const LenisModule = await import('lenis').catch(() => null);
-            if (LenisModule) {
-              const Lenis = LenisModule.default || LenisModule;
-              const lenis = new (Lenis as new (o: Record<string, unknown>) => {
-                raf: (t: number) => void;
-                destroy: () => void;
-                stop: () => void;
-                start: () => void;
-              })({
-                duration: 1.2,
-                easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                smoothWheel: true,
-              });
-              lenisRef.current = lenis;
-              gsap.ticker.add((time) => { lenis.raf(time * 1000); });
-              gsap.ticker.lagSmoothing(0);
-            }
-          } catch {
-            // Lenis unavailable — native scroll is fine
-          }
+            const LenisMod = await import('lenis');
+            const Lenis = LenisMod.default;
+            const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+            lenisRef.current = lenis;
+            gsapInstance?.ticker.add((time) => { lenis.raf(time * 1000); });
+            gsapInstance?.ticker.lagSmoothing(0);
+          } catch { /* Lenis unavailable */ }
         }
 
-        // Pause on tab hidden
-        const handleVisibility = () => {
+        const onVisibility = () => {
           if (document.hidden) {
-            gsap.globalTimeline.pause();
-            (lenisRef.current as { stop?: () => void } | null)?.stop?.();
+            gsapInstance?.globalTimeline.pause();
+            lenisRef.current?.stop?.();
           } else {
-            gsap.globalTimeline.resume();
-            (lenisRef.current as { start?: () => void } | null)?.start?.();
+            gsapInstance?.globalTimeline.resume();
+            lenisRef.current?.start?.();
           }
         };
-        document.addEventListener('visibilitychange', handleVisibility);
-
-        cleanupGsap = () => {
-          document.removeEventListener('visibilitychange', handleVisibility);
-          (lenisRef.current as { destroy?: () => void } | null)?.destroy?.();
-        };
-      } catch {
-        // GSAP failed to load — site works without animation
-      }
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => document.removeEventListener('visibilitychange', onVisibility);
+      } catch { /* GSAP unavailable — site works without animation */ }
     }
 
-    init();
-    return () => { cleanupGsap?.(); };
+    let cleanup: (() => void) | undefined;
+    init().then((fn) => { cleanup = fn; });
+
+    return () => {
+      cleanup?.();
+      lenisRef.current?.destroy?.();
+    };
   }, [reduced]);
 
   return (
