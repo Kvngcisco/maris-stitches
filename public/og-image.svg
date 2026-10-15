@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="og" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2A1A2E"/>
+      <stop offset="70%" style="stop-color:#4E1F39"/>
+      <stop offset="100%" style="stop-color:#6B2D4F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#og)"/>
+  <rect x="60" y="60" width="1080" height="510" fill="none" stroke="#6B2D4F" stroke-width="1" opacity="0.4"/>
+  <text x="600" y="270" font-family="Georgia, serif" font-size="64" fill="#F8F4EE" text-anchor="middle" font-weight="300" letter-spacing="2">Maris Stitches</text>
+  <text x="600" y="340" font-family="Georgia, serif" font-size="64" fill="#F8F4EE" text-anchor="middle" font-weight="300" letter-spacing="2">and Contour</text>
+  <text x="600" y="420" font-family="Georgia, serif" font-size="22" fill="#E8D5D0" text-anchor="middle" font-weight="300" letter-spacing="3" opacity="0.8">Where Every Stitch Shapes Elegance.</text>
+  <text x="600" y="490" font-family="Georgia, serif" font-size="14" fill="#8A8078" text-anchor="middle" letter-spacing="4">OGBOMOSHO · OYO STATE · NIGERIA</text>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <defs>
+    <linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2A1A2E"/>
+      <stop offset="50%" style="stop-color:#6B2D4F"/>
+      <stop offset="100%" style="stop-color:#E8D5D0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#ag)"/>
+  <rect x="50" y="50" width="700" height="900" fill="none" stroke="#F8F4EE" stroke-width="1" opacity="0.2"/>
+  <text x="400" y="460" font-family="Georgia, serif" font-size="36" fill="#F8F4EE" text-anchor="middle" font-weight="300" letter-spacing="4">MARIS STITCHES</text>
+  <text x="400" y="510" font-family="Georgia, serif" font-size="16" fill="#E8D5D0" text-anchor="middle" opacity="0.8" letter-spacing="2">AND CONTOUR</text>
+  <text x="400" y="560" font-family="Georgia, serif" font-size="13" fill="#E8D5D0" text-anchor="middle" opacity="0.5">Where Every Stitch Shapes Elegance.</text>
+  <text x="400" y="620" font-family="Georgia, serif" font-size="11" fill="#F8F4EE" text-anchor="middle" opacity="0.3">[ Owner photo to be placed here ]</text>
+</svg>

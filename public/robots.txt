@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://marisstitches.com
+
+# Sitemaps
+Sitemap: https://marisstitches.com/sitemap.xml

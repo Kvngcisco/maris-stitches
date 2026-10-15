@@ -1,0 +1,2 @@
+/* Redirect to the real globals in /styles/globals.css */
+@import "../styles/globals.css";

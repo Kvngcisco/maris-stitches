@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="820" viewBox="0 0 600 820">
+  <defs>
+    <linearGradient id="g4" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8A8078"/>
+      <stop offset="100%" style="stop-color:#2A1A2E"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="820" fill="url(#g4)"/>
+  <rect x="40" y="40" width="520" height="740" fill="none" stroke="#E8D5D0" stroke-width="1" opacity="0.3"/>
+  <text x="300" y="380" font-family="Georgia, serif" font-size="28" fill="#F8F4EE" text-anchor="middle" font-weight="300">Ankara Elegance</text>
+  <text x="300" y="420" font-family="Georgia, serif" font-size="14" fill="#F8F4EE" text-anchor="middle" opacity="0.7">Native and Occasion Wear</text>
+  <text x="300" y="460" font-family="Georgia, serif" font-size="11" fill="#F8F4EE" text-anchor="middle" opacity="0.5">Maris Stitches and Contour</text>
+</svg>
