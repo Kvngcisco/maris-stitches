@@ -4,10 +4,6 @@ import { useEffect, useRef } from 'react';
 import { siteConfig } from '@/config/site';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import SectionNumeral from '@/components/ui/SectionNumeral';
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const serviceIcons: Record<string, React.ReactNode> = {
   scissors: (
@@ -47,21 +43,29 @@ export default function ServicesSection() {
 
   useEffect(() => {
     if (reduced || !cardsRef.current) return;
-    const ctx = gsap.context(() => {
-      const cards = cardsRef.current!.querySelectorAll('.service-card');
-      gsap.fromTo(cards,
-        { opacity: 0, y: 50 },
-        {
-          opacity: 1,
-          y: 0,
-          stagger: 0.1,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: cardsRef.current, start: 'top 75%' },
-        }
-      );
-    });
-    return () => ctx.revert();
+
+    async function animate() {
+      try {
+        const [gsapMod, stMod] = await Promise.all([
+          import('gsap'),
+          import('gsap/ScrollTrigger'),
+        ]);
+        const gsap = gsapMod.default;
+        const { ScrollTrigger } = stMod;
+        gsap.registerPlugin(ScrollTrigger);
+
+        const cards = cardsRef.current!.querySelectorAll('.service-card');
+        gsap.fromTo(cards,
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: 0, stagger: 0.1, duration: 0.7, ease: 'power3.out',
+            scrollTrigger: { trigger: cardsRef.current, start: 'top 75%' } }
+        );
+      } catch {
+        // Animation unavailable — cards still visible
+      }
+    }
+
+    animate();
   }, [reduced]);
 
   return (
@@ -71,34 +75,24 @@ export default function ServicesSection() {
       aria-label="Our Services"
     >
       <SectionNumeral numeral="03" />
-
       <div className="container">
         <div className="mb-12">
           <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">What We Create</p>
           <h2 className="font-heading text-4xl md:text-5xl font-light text-aubergine">Our Services</h2>
           <div className="mt-4 w-12 h-px bg-mulberry" />
         </div>
-
         <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {siteConfig.services.map((service, i) => (
             <div
               key={service.title}
-              className={`service-card bg-white rounded-2xl p-8 shadow-sm relative overflow-hidden group transition-all duration-base hover:-translate-y-1.5 hover:shadow-lg ${
+              className={`service-card bg-white rounded-2xl p-8 shadow-sm relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 i === 4 ? 'sm:col-span-2 lg:col-span-1 lg:col-start-2' : ''
               }`}
             >
-              {/* Mulberry left border accent */}
-              <div className="absolute left-0 top-0 w-[3px] bg-mulberry transition-all duration-slow h-0 group-hover:h-full" />
-
-              <div className="mb-4">
-                {serviceIcons[service.icon] ?? serviceIcons.sparkle}
-              </div>
-              <h3 className="font-heading text-2xl font-medium text-aubergine mb-3">
-                {service.title}
-              </h3>
-              <p className="font-body text-sm text-stone leading-relaxed">
-                {service.description}
-              </p>
+              <div className="absolute left-0 top-0 w-[3px] bg-mulberry transition-all duration-700 h-0 group-hover:h-full" />
+              <div className="mb-4">{serviceIcons[service.icon] ?? serviceIcons.sparkle}</div>
+              <h3 className="font-heading text-2xl font-medium text-aubergine mb-3">{service.title}</h3>
+              <p className="font-body text-sm text-stone leading-relaxed">{service.description}</p>
             </div>
           ))}
         </div>

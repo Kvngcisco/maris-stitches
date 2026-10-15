@@ -4,6 +4,7 @@ import '../styles/globals.css';
 import { siteConfig } from '@/config/site';
 import Providers from '@/components/ui/Providers';
 import ClientOnlyExtras from '@/components/ui/ClientOnlyExtras';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 const cormorant = Cormorant_Garamond({
   subsets:  ['latin'],
@@ -89,10 +90,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-ivory text-aubergine antialiased">
-        <Providers>
-          <ClientOnlyExtras />
-          {children}
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <ClientOnlyExtras />
+            {children}
+          </Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

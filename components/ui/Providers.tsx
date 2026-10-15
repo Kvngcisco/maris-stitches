@@ -2,10 +2,6 @@
 
 import { createContext, useContext, useEffect, useRef } from 'react';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
-import gsap from 'gsap';
-import ScrollTrigger from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 // ─── Reduced Motion Context ───────────────────────────────
 const ReducedMotionContext = createContext(false);
@@ -20,49 +16,66 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<unknown>(null);
 
   useEffect(() => {
-    if (reduced) return;
+    // All animation libraries loaded lazily — safe for mobile SSR
+    let cleanupGsap: (() => void) | undefined;
 
-    let lenis: { raf: (t: number) => void; destroy: () => void; stop: () => void; start: () => void } | null = null;
-
-    async function initLenis() {
+    async function init() {
       try {
-        const LenisModule = await import('lenis').catch(() => null);
-        if (!LenisModule) return;
+        const [gsapMod, ScrollTriggerMod] = await Promise.all([
+          import('gsap'),
+          import('gsap/ScrollTrigger'),
+        ]);
+        const gsap = gsapMod.default;
+        const { ScrollTrigger } = ScrollTriggerMod;
+        gsap.registerPlugin(ScrollTrigger);
 
-        const Lenis = LenisModule.default || LenisModule;
-        lenis = new (Lenis as new (opts: Record<string, unknown>) => typeof lenis)({
-          duration: 1.2,
-          easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          smoothWheel: true,
-        });
-        lenisRef.current = lenis;
+        if (!reduced) {
+          try {
+            const LenisModule = await import('lenis').catch(() => null);
+            if (LenisModule) {
+              const Lenis = LenisModule.default || LenisModule;
+              const lenis = new (Lenis as new (o: Record<string, unknown>) => {
+                raf: (t: number) => void;
+                destroy: () => void;
+                stop: () => void;
+                start: () => void;
+              })({
+                duration: 1.2,
+                easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smoothWheel: true,
+              });
+              lenisRef.current = lenis;
+              gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+              gsap.ticker.lagSmoothing(0);
+            }
+          } catch {
+            // Lenis unavailable — native scroll is fine
+          }
+        }
 
-        gsap.ticker.add((time) => { lenis?.raf(time * 1000); });
-        gsap.ticker.lagSmoothing(0);
+        // Pause on tab hidden
+        const handleVisibility = () => {
+          if (document.hidden) {
+            gsap.globalTimeline.pause();
+            (lenisRef.current as { stop?: () => void } | null)?.stop?.();
+          } else {
+            gsap.globalTimeline.resume();
+            (lenisRef.current as { start?: () => void } | null)?.start?.();
+          }
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        cleanupGsap = () => {
+          document.removeEventListener('visibilitychange', handleVisibility);
+          (lenisRef.current as { destroy?: () => void } | null)?.destroy?.();
+        };
       } catch {
-        // Lenis unavailable — native scroll is fine
+        // GSAP failed to load — site works without animation
       }
     }
 
-    initLenis();
-
-    // Pause all animation when tab is hidden
-    const handleVisibility = () => {
-      if (document.hidden) {
-        gsap.globalTimeline.pause();
-        (lenisRef.current as { stop?: () => void } | null)?.stop?.();
-      } else {
-        gsap.globalTimeline.resume();
-        (lenisRef.current as { start?: () => void } | null)?.start?.();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibility);
-      (lenisRef.current as { destroy?: () => void } | null)?.destroy?.();
-    };
+    init();
+    return () => { cleanupGsap?.(); };
   }, [reduced]);
 
   return (

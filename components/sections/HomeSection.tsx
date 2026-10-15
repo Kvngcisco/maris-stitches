@@ -6,7 +6,6 @@ import { siteConfig } from '@/config/site';
 import { useReducedMotion } from '@/lib/hooks/useReducedMotion';
 import { preloaderDone } from '@/components/ui/Preloader';
 import Button from '@/components/ui/Button';
-import gsap from 'gsap';
 
 const HeroBackground = dynamic(() => import('@/components/three/HeroBackground'), {
   ssr: false,
@@ -28,20 +27,28 @@ export default function HomeSection() {
   const reduced      = useReducedMotion();
 
   useEffect(() => {
-    const runEntrance = () => {
+    const runEntrance = async () => {
       if (reduced) {
-        // Show everything immediately without animation
         [headlineRef, bodyRef, ctaRef, indicatorRef].forEach((r) => {
           if (r.current) r.current.style.opacity = '1';
         });
         return;
       }
 
-      gsap.timeline()
-        .to(headlineRef.current,  { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
-        .to(bodyRef.current,      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, '-=0.4')
-        .to(ctaRef.current,       { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3')
-        .to(indicatorRef.current, { opacity: 1,        duration: 0.5, ease: 'power1.out' }, '+=0.2');
+      try {
+        const gsapMod = await import('gsap');
+        const gsap = gsapMod.default;
+        gsap.timeline()
+          .to(headlineRef.current,  { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
+          .to(bodyRef.current,      { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' }, '-=0.4')
+          .to(ctaRef.current,       { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3')
+          .to(indicatorRef.current, { opacity: 1,        duration: 0.5, ease: 'power1.out' }, '+=0.2');
+      } catch {
+        // GSAP unavailable — show content immediately
+        [headlineRef, bodyRef, ctaRef, indicatorRef].forEach((r) => {
+          if (r.current) r.current.style.opacity = '1';
+        });
+      }
     };
 
     // If preloader already done (race condition fix), run immediately
