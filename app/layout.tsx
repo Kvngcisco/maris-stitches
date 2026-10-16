@@ -63,6 +63,9 @@ const localBusinessSchema = {
   description:   siteConfig.description,
   url:           siteConfig.url,
   telephone:     `+234${siteConfig.phone.slice(1)}`,
+  email:         siteConfig.email,
+  logo:          `${siteConfig.url}/logo.png`,
+  image:         `${siteConfig.url}/logo.png`,
   address: {
     '@type':         'PostalAddress',
     streetAddress:   'LAUTECH Under-G area',

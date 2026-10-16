@@ -83,25 +83,40 @@ export default function Preloader() {
     >
       {/* Logo */}
       <div className="preloader-logo" style={{ textAlign: 'center' }}>
-        <div style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontSize: '2.2rem',
-          fontWeight: 300,
-          letterSpacing: '0.15em',
-          color: '#2A1A2E',
-          lineHeight: 1.2,
-        }}>
-          Maris Stitches
-        </div>
-        <div style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
-          fontSize: '1rem',
-          fontWeight: 300,
-          letterSpacing: '0.5em',
-          color: '#6B2D4F',
-          marginTop: '0.25rem',
-        }}>
-          AND CONTOUR
+        {/* Try logo image first, fall back to text */}
+        <img
+          src="/logo.png"
+          alt="Maris Stitches and Contour"
+          style={{ height: '120px', width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto' }}
+          onError={(e) => {
+            // If image not found, show text fallback
+            const el = e.currentTarget as HTMLImageElement;
+            el.style.display = 'none';
+            const fallback = el.nextElementSibling as HTMLElement | null;
+            if (fallback) fallback.style.display = 'block';
+          }}
+        />
+        <div style={{ display: 'none' }}>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: '2.2rem',
+            fontWeight: 300,
+            letterSpacing: '0.15em',
+            color: '#2A1A2E',
+            lineHeight: 1.2,
+          }}>
+            Maris Stitches
+          </div>
+          <div style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: '1rem',
+            fontWeight: 300,
+            letterSpacing: '0.5em',
+            color: '#6B2D4F',
+            marginTop: '0.25rem',
+          }}>
+            AND CONTOUR
+          </div>
         </div>
       </div>
 

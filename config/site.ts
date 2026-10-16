@@ -16,7 +16,7 @@ export const siteConfig = {
   whatsappDisplay:  '09029028384',     // local format for display
   whatsappMessage:  'Hello, I\'d like to enquire about your designs.',
   address:          'LAUTECH Under-G area, Ogbomosho, Oyo State, Nigeria',
-  email:            '', // TODO: owner to confirm email before launch
+  email:            'marisstitchesandcntour22@gmail.com',
 
   ogImage: '/og-image.svg',
 

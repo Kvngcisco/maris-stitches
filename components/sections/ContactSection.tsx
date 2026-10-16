@@ -50,9 +50,8 @@ export default function ContactSection() {
               <ContactRow
                 icon={<Mail size={18} aria-hidden="true" />}
                 label="Email"
-                value={siteConfig.email || 'Coming soon'}
-                href={siteConfig.email ? `mailto:${siteConfig.email}` : undefined}
-                muted={!siteConfig.email}
+                value={siteConfig.email || 'marisstitchesandcntour22@gmail.com'}
+                href={`mailto:${siteConfig.email || 'marisstitchesandcntour22@gmail.com'}`}
               />
             </div>
 
