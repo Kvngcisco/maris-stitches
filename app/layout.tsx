@@ -24,15 +24,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
     template: `%s | ${siteConfig.name}`,
-    default:  siteConfig.name,
+    default:  'Custom Nigerian Tailoring in Ogbomosho | Maris Stitches',
   },
   description: siteConfig.description,
   keywords: [
-    'fashion designer in Ogbomosho',
+    'custom tailoring Nigeria',
+    'aso-ebi tailor',
+    'agbada tailor',
+    'senator style tailor',
+    'Nigerian bridal wear',
+    'Ankara and Adire tailoring',
     'tailor in Ogbomosho',
-    'custom gowns Nigeria',
-    'native wear LAUTECH',
-    'women fashion Nigeria',
+    'On-Ara style',
     'Maris Stitches and Contour',
   ],
   openGraph: {

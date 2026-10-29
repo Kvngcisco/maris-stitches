@@ -48,7 +48,7 @@ export default function HomeSection() {
               transitionDelay: '0s',
             }}
           >
-            Fashion Designed to Make You Stand Out.
+            Nigerian Style, Made to Fit You.
           </h1>
 
           <p

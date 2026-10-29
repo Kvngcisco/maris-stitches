@@ -77,8 +77,8 @@ export default function ServicesSection() {
       <SectionNumeral numeral="03" />
       <div className="container">
         <div className="mb-12">
-          <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">What We Create</p>
-          <h2 className="font-heading text-4xl md:text-5xl font-light text-aubergine">Our Services</h2>
+          <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">Nigerian Fabrics and Craft</p>
+          <h2 className="font-heading text-4xl md:text-5xl font-light text-aubergine">Styles for Every Occasion</h2>
           <div className="mt-4 w-12 h-px bg-mulberry" />
         </div>
         <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -78,7 +78,7 @@ export default function PortfolioSection() {
       <div className="container">
         {/* Heading */}
         <div className="mb-10">
-          <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">Our Work</p>
+          <p className="font-body text-xs tracking-widest text-stone uppercase mb-4">Nigerian Style Inspiration</p>
           <h2 className="font-heading text-4xl md:text-5xl font-light text-aubergine">Portfolio</h2>
           <div className="mt-4 w-12 h-px bg-mulberry" />
         </div>

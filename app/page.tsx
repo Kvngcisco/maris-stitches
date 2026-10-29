@@ -11,7 +11,7 @@ import type { Metadata } from 'next';
 import { siteConfig } from '@/config/site';
 
 export const metadata: Metadata = {
-  title:       siteConfig.name,
+  title:       'Custom Nigerian Tailoring in Ogbomosho',
   description: siteConfig.description,
 };
 
